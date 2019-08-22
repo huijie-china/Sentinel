@@ -25,8 +25,8 @@ import javax.servlet.http.HttpSession;
  * @author cdfive
  * @since 1.6.0
  */
-@Primary
-@Component
+//@Primary
+//@Component
 public class SimpleWebAuthServiceImpl implements AuthService<HttpServletRequest> {
 
     public static final String WEB_SESSTION_KEY = "session_sentinel_admin";

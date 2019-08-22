@@ -21,7 +21,7 @@ npm i
 npm start
 ```
 
-## 构建前端资源
+## 构建前端资源cpnc
 
 ```
 npm run build

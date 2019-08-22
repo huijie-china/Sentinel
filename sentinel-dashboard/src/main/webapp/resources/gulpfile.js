@@ -56,7 +56,9 @@ const JS_APP = [
   'app/scripts/services/authority_service.js',
   'app/scripts/services/cluster_state_service.js',
   'app/scripts/services/gateway/api_service.js',
+  'app/scripts/services/gateway/api_service_v2.js',
   'app/scripts/services/gateway/flow_service.js',
+  'app/scripts/services/gateway/flow_service_v2.js',
 ];
 
 gulp.task('lib', function () {
@@ -122,7 +124,7 @@ gulp.task('serve', ['build'], function () {
   });
   // 打开浏览器
   setTimeout(() => {
-    open('http://localhost:8080/index_dev.htm')
+    open('http://localhost:10003/index_dev.htm')
   }, 200);
   // 监听
   gulp.watch(app.srcPath + '**/*.js', ['js']);

@@ -29,6 +29,7 @@ import com.alibaba.csp.sentinel.dashboard.repository.metric.MetricsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +52,7 @@ public class MetricController {
     private static final long maxQueryIntervalMs = 1000 * 60 * 60;
 
     @Autowired
+    @Qualifier(value = "elasticsearchMetricsRepository")
     private MetricsRepository<MetricEntity> metricStore;
 
     @ResponseBody
@@ -116,7 +118,7 @@ public class MetricController {
                 app, resource, startTime, endTime);
             logger.debug("resource={}, entities.size()={}", resource, entities == null ? "null" : entities.size());
             List<MetricVo> vos = MetricVo.fromMetricEntities(entities, resource);
-            Iterable<MetricVo> vosSorted = sortMetricVoAndDistinct(vos);
+            Iterable<MetricVo> vosSorted = sortMetricVoAndDistinct(vos, startTime, endTime);
             map.put(resource, vosSorted);
         }
         logger.debug("queryTopResourceMetric() total query time={} ms", System.currentTimeMillis() - time);
@@ -156,20 +158,66 @@ public class MetricController {
         List<MetricEntity> entities = metricStore.queryByAppAndResourceBetween(
             app, identity, startTime, endTime);
         List<MetricVo> vos = MetricVo.fromMetricEntities(entities, identity);
-        return Result.ofSuccess(sortMetricVoAndDistinct(vos));
+        return Result.ofSuccess(sortMetricVoAndDistinct(vos, startTime, endTime));
     }
 
-    private Iterable<MetricVo> sortMetricVoAndDistinct(List<MetricVo> vos) {
-        if (vos == null) {
-            return null;
-        }
-        Map<Long, MetricVo> map = new TreeMap<>();
-        for (MetricVo vo : vos) {
-            MetricVo oldVo = map.get(vo.getTimestamp());
-            if (oldVo == null || vo.getGmtCreate() > oldVo.getGmtCreate()) {
-                map.put(vo.getTimestamp(), vo);
+    private Iterable<MetricVo> sortMetricVoAndDistinct(List<MetricVo> vos, long startTime, long endTime) {
+        TreeMap<Long, MetricVo> map = new TreeMap<>();
+
+        if (vos != null && vos.size() > 0) {
+            for (MetricVo vo : vos) {
+                MetricVo oldVo = map.get(vo.getTimestamp());
+                if (oldVo == null || vo.getGmtCreate() > oldVo.getGmtCreate()) {
+                    map.put(vo.getTimestamp(), vo);
+                }
             }
         }
-        return map.values();
+        return fillBlank(map, startTime, endTime);
+    }
+
+    private Iterable<MetricVo> fillBlank(TreeMap<Long, MetricVo> map, long startTime, long
+                                          endTime) {
+        TreeMap<Long, MetricVo> resultMap = new TreeMap<>();
+        /*if (map == null || map.size() <= 0) {
+            long startTimeSeconds = startTime/1000L;
+            MetricVo startTimeVo = new MetricVo();
+            startTimeVo.setTimestamp(startTimeSeconds * 1000L);
+            startTimeVo.setPassQps(0L);
+            startTimeVo.setBlockQps(0L);
+            startTimeVo.setSuccessQps(0L);
+            startTimeVo.setExceptionQps(0L);
+            startTimeVo.setRt(0.00);
+            startTimeVo.setCount(0);
+            resultMap.put(startTimeSeconds * 1000L, startTimeVo);
+
+            long endTimeSeconds = endTime/1000L;
+            MetricVo endTimeVo = new MetricVo();
+            endTimeVo.setTimestamp(endTimeSeconds * 1000L);
+            endTimeVo.setPassQps(0L);
+            endTimeVo.setBlockQps(0L);
+            endTimeVo.setSuccessQps(0L);
+            endTimeVo.setExceptionQps(0L);
+            endTimeVo.setRt(0.00);
+            endTimeVo.setCount(0);
+            resultMap.put(endTimeSeconds * 1000L, endTimeVo);
+            return resultMap.values();
+        }*/
+        for (long i = startTime/1000L; i < endTime/1000L; i = i + 1) {
+            long timestamp = i * 1000L;
+            if (map.get(timestamp) == null) {
+                MetricVo vo = new MetricVo();
+                vo.setTimestamp(timestamp);
+                vo.setPassQps(0L);
+                vo.setBlockQps(0L);
+                vo.setSuccessQps(0L);
+                vo.setExceptionQps(0L);
+                vo.setRt(0.00);
+                vo.setCount(0);
+                resultMap.put(timestamp, vo);
+            }else {
+                resultMap.put(timestamp, map.get(timestamp));
+            }
+        }
+        return resultMap.values();
     }
 }

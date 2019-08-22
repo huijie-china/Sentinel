@@ -1,10 +1,10 @@
 var app = angular.module('sentinelDashboardApp');
 
 app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService',
-  'ngDialog', 'GatewayFlowService', 'GatewayApiService', 'DegradeService', 'MachineService',
+  'ngDialog', 'GatewayFlowServiceV2', 'GatewayApiServiceV2', 'DegradeService', 'MachineService',
   '$interval', '$location', '$timeout',
   function ($scope, $stateParams, IdentityService, ngDialog,
-    GatewayFlowService, GatewayApiService, DegradeService, MachineService, $interval, $location, $timeout) {
+    GatewayFlowServiceV2, GatewayApiServiceV2, DegradeService, MachineService, $interval, $location, $timeout) {
 
     $scope.app = $stateParams.app;
 
@@ -39,7 +39,7 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
       }
 
       var mac = $scope.macInputModel.split(':');
-      GatewayApiService.queryApis($scope.app, mac[0], mac[1]).success(
+      GatewayApiServiceV2.queryApis($scope.app, mac[0], mac[1]).success(
         function (data) {
           if (data.code == 0 && data.data) {
             $scope.apiNames = [];
@@ -131,13 +131,13 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
     };
 
     function saveGatewayFlowRule() {
-      if (!GatewayFlowService.checkRuleValid(gatewayFlowRuleDialogScope.currentRule)) {
+      if (!GatewayFlowServiceV2.checkRuleValid(gatewayFlowRuleDialogScope.currentRule)) {
         return;
       }
-      GatewayFlowService.newRule(gatewayFlowRuleDialogScope.currentRule).success(function (data) {
+      GatewayFlowServiceV2.newRule(gatewayFlowRuleDialogScope.currentRule).success(function (data) {
         if (data.code === 0) {
           gatewayFlowRuleDialog.close();
-          let url = '/dashboard/gateway/flow/' + $scope.app;
+          let url = '/v2/dashboard/gateway/flow/' + $scope.app;
           $location.path(url);
         } else {
           alert('失败!');

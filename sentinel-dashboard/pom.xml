@@ -109,7 +109,6 @@
             <groupId>com.ctrip.framework.apollo</groupId>
             <artifactId>apollo-openapi</artifactId>
             <version>1.2.0</version>
-            <scope>test</scope>
         </dependency>
 
         <!--for Zookeeper rule publisher sample-->
@@ -135,6 +134,23 @@
         	<artifactId>system-rules</artifactId>
         	<version>1.16.1</version>
         	<scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-high-level-client -->
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>6.0.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.elasticsearch</groupId>
+                    <artifactId>elasticsearch</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>6.0.1</version>
         </dependency>
     </dependencies>
 
